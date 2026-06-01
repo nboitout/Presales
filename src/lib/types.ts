@@ -40,6 +40,7 @@ export interface ProspectSession {
   prospectName: string;
   prospectEmail: string | null;
   emailVerified: boolean;
+  trainingConsent: boolean;
   status: "active" | "completed";
   currentSlide: number;
   totalSlides: number;
@@ -61,6 +62,7 @@ export interface MagicLink {
   shareId: string;
   prospectName: string;
   prospectEmail: string;
+  trainingConsent: boolean;
   sessionId: string | null;
   expiresAt: string;
   usedAt: string | null;

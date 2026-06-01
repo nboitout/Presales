@@ -11,9 +11,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
  */
 export async function POST(req: NextRequest, { params }: { params: { shareId: string } }) {
   try {
-    const { name, email } = await req.json();
+    const { name, email, trainingConsent } = await req.json();
     const cleanName  = (name as string | undefined)?.trim() ?? "";
     const cleanEmail = (email as string | undefined)?.trim().toLowerCase() ?? "";
+    const consent    = trainingConsent === true;
 
     if (!cleanName) return NextResponse.json({ error: "Name is required" }, { status: 400 });
     if (!EMAIL_RE.test(cleanEmail)) {
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest, { params }: { params: { shareId: st
       shareId:       params.shareId,
       prospectName:  cleanName,
       prospectEmail: cleanEmail,
+      trainingConsent: consent,
     });
 
     const link = `${req.nextUrl.origin}/api/share/${params.shareId}/verify?token=${magic.token}`;

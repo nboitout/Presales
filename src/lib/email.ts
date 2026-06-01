@@ -72,8 +72,8 @@ function renderHtml({ name, productName, link }: MagicLinkEmail): string {
             <a href="${link}" style="display:inline-block;background:#5b8cff;color:#fff;text-decoration:none;font-size:15px;font-weight:600;padding:14px 26px;border-radius:10px;">Open my session →</a>
           </td></tr>
           <tr><td style="color:#6b7384;font-size:12px;line-height:1.6;padding-top:28px;">
-            If you didn't request this, you can safely ignore this email. Your data is used only to
-            personalize this session — it is never sold or used to train models.
+            If you didn't request this, you can safely ignore this email. Your data is never sold,
+            and is only used to improve this service if you opted in.
           </td></tr>
         </table>
       </td></tr>

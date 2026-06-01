@@ -77,6 +77,7 @@ export default function SessionDetailPage() {
             {session.prospectEmail && (
               <span className={styles.prospectEmailHeader}>
                 {session.prospectEmail}{session.emailVerified ? " · ✓ verified" : ""}
+                {session.trainingConsent ? " · opted in to training" : ""}
               </span>
             )}
             <span className={styles.sessionDate}>{fmtDate(session.createdAt)}</span>

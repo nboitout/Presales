@@ -42,6 +42,7 @@ function initSchema(db: Database.Database) {
       prospect_name        TEXT NOT NULL,
       prospect_email       TEXT,
       email_verified       INTEGER DEFAULT 0,
+      training_consent     INTEGER DEFAULT 0,
       status               TEXT DEFAULT 'active',
       current_slide        INTEGER DEFAULT 1,
       total_slides         INTEGER DEFAULT 0,
@@ -63,6 +64,7 @@ function initSchema(db: Database.Database) {
       share_id       TEXT NOT NULL,
       prospect_name  TEXT NOT NULL,
       prospect_email TEXT NOT NULL,
+      training_consent INTEGER DEFAULT 0,
       session_id     TEXT,
       expires_at     TEXT NOT NULL,
       used_at        TEXT,
@@ -71,10 +73,15 @@ function initSchema(db: Database.Database) {
   `);
 
   /* ── Migrations for pre-existing DBs ──────────────────────── */
-  const cols = db.prepare("PRAGMA table_info(prospect_sessions)").all() as { name: string }[];
-  if (!cols.some(c => c.name === "email_verified")) {
-    db.exec("ALTER TABLE prospect_sessions ADD COLUMN email_verified INTEGER DEFAULT 0");
-  }
+  const addColumnIfMissing = (table: string, column: string, ddl: string) => {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+    if (!cols.some(c => c.name === column)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
+    }
+  };
+  addColumnIfMissing("prospect_sessions", "email_verified",   "email_verified INTEGER DEFAULT 0");
+  addColumnIfMissing("prospect_sessions", "training_consent", "training_consent INTEGER DEFAULT 0");
+  addColumnIfMissing("magic_links",       "training_consent", "training_consent INTEGER DEFAULT 0");
 }
 
 /* ── DemoDeck helpers ─────────────────────────────────────── */
@@ -183,6 +190,7 @@ function rowToSession(row: Record<string, unknown>): ProspectSession {
     prospectName:         row.prospect_name as string,
     prospectEmail:        (row.prospect_email as string) ?? null,
     emailVerified:        Boolean(row.email_verified),
+    trainingConsent:      Boolean(row.training_consent),
     status:               (row.status as "active" | "completed") ?? "active",
     currentSlide:         (row.current_slide as number) ?? 1,
     totalSlides:          (row.total_slides as number) ?? 0,
@@ -204,15 +212,16 @@ export async function createSession(data: {
   prospectName: string;
   prospectEmail?: string;
   emailVerified?: boolean;
+  trainingConsent?: boolean;
   totalSlides: number;
 }): Promise<ProspectSession> {
   const id = uuidv4();
   const db = getDb();
   db.prepare(`
-    INSERT INTO prospect_sessions (id, demo_deck_id, prospect_name, prospect_email, email_verified, total_slides)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO prospect_sessions (id, demo_deck_id, prospect_name, prospect_email, email_verified, training_consent, total_slides)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `).run(id, data.demoDeckId, data.prospectName, data.prospectEmail ?? null,
-         data.emailVerified ? 1 : 0, data.totalSlides);
+         data.emailVerified ? 1 : 0, data.trainingConsent ? 1 : 0, data.totalSlides);
   return rowToSession(db.prepare("SELECT * FROM prospect_sessions WHERE id = ?").get(id) as Record<string, unknown>);
 }
 
@@ -225,6 +234,7 @@ function rowToMagicLink(row: Record<string, unknown>): MagicLink {
     shareId:       row.share_id as string,
     prospectName:  row.prospect_name as string,
     prospectEmail: row.prospect_email as string,
+    trainingConsent: Boolean(row.training_consent),
     sessionId:     (row.session_id as string) ?? null,
     expiresAt:     row.expires_at as string,
     usedAt:        (row.used_at as string) ?? null,
@@ -237,15 +247,17 @@ export async function createMagicLink(data: {
   shareId: string;
   prospectName: string;
   prospectEmail: string;
+  trainingConsent?: boolean;
   ttlMinutes?: number;
 }): Promise<MagicLink> {
   const token     = uuidv4() + uuidv4().replace(/-/g, "");
   const expiresAt = new Date(Date.now() + (data.ttlMinutes ?? 30) * 60_000).toISOString();
   const db = getDb();
   db.prepare(`
-    INSERT INTO magic_links (token, deck_id, share_id, prospect_name, prospect_email, expires_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(token, data.deckId, data.shareId, data.prospectName, data.prospectEmail, expiresAt);
+    INSERT INTO magic_links (token, deck_id, share_id, prospect_name, prospect_email, training_consent, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(token, data.deckId, data.shareId, data.prospectName, data.prospectEmail,
+         data.trainingConsent ? 1 : 0, expiresAt);
   return rowToMagicLink(db.prepare("SELECT * FROM magic_links WHERE token = ?").get(token) as Record<string, unknown>);
 }
 

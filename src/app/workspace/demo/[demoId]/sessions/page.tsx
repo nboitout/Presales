@@ -133,6 +133,7 @@ export default function SessionsListPage() {
                         {s.prospectEmail && (
                           <div className={styles.prospectEmail}>
                             {s.prospectEmail}{s.emailVerified ? " ✓" : ""}
+                            {s.trainingConsent ? " · training ✓" : ""}
                           </div>
                         )}
                       </div>

@@ -30,6 +30,7 @@ export default function DemoEntryPage() {
   const [starting, setStarting] = useState(false);
   const [sent,    setSent]    = useState(false);
   const [devLink, setDevLink] = useState("");
+  const [consent, setConsent] = useState(false);
 
   useEffect(() => {
     fetch(`/api/share/${shareId}`)
@@ -54,7 +55,7 @@ export default function DemoEntryPage() {
       const res = await fetch(`/api/share/${shareId}/request-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), email: email.trim() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), trainingConsent: consent }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Failed to send your link");
@@ -148,6 +149,19 @@ export default function DemoEntryPage() {
                 />
               </div>
 
+              <label className={styles.consentRow}>
+                <input
+                  type="checkbox"
+                  className={styles.consentBox}
+                  checked={consent}
+                  onChange={e => setConsent(e.target.checked)}
+                />
+                <span className={styles.consentText}>
+                  Optional: I allow my anonymized conversation to be used to improve this service.
+                  Leaving this unchecked means your session is never used for training.
+                </span>
+              </label>
+
               {error && <div className={styles.errorMsg}>{error}</div>}
 
               <button
@@ -160,7 +174,7 @@ export default function DemoEntryPage() {
             </form>
 
             <p className={styles.hint}>
-              Takes about 5 minutes · No password · Your data is never sold or used to train models
+              Takes about 5 minutes · No password · We never sell your data
             </p>
           </>
         )}

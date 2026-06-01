@@ -45,6 +45,7 @@ export async function GET(req: NextRequest, { params }: { params: { shareId: str
       prospectName:  link.prospectName,
       prospectEmail: link.prospectEmail,
       emailVerified: true,
+      trainingConsent: link.trainingConsent,
       totalSlides:   deck.totalSlides,
     });
     await db.consumeMagicLink(token, session.id);
