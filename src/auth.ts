@@ -32,13 +32,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const email = (credentials?.email as string | undefined)?.trim().toLowerCase() ?? "";
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+
+        /* An explicit allowlist is the sole gate when configured — this lets
+           the workspace owner sign in with any address (e.g. a personal
+           Gmail) for their own tool. Set ALLOWED_EMAILS to your address(es). */
+        if (ALLOWED_EMAILS.length > 0) {
+          return ALLOWED_EMAILS.includes(email) ? { id: email, email, name: email } : null;
+        }
+
+        /* Otherwise fall back to a professional-domain gate. */
         const domain = email.split("@")[1];
         if (BLOCKED_DOMAINS.has(domain)) return null;
-        if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.includes(email)) return null;
         return { id: email, email, name: email };
       },
     }),
   ],
+
+  /* Trust the deployment host. Vercel auto-trusts, but this keeps sign-in
+     working behind other hosts/proxies and avoids Auth.js UntrustedHost. */
+  trustHost: true,
 
   session: { strategy: "jwt", maxAge: THIRTY_DAYS },
 
@@ -57,6 +69,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
+    /* Used by middleware to gate the workspace. */
+    authorized({ auth: session, request: { nextUrl } }) {
+      if (nextUrl.pathname.startsWith("/workspace")) return !!session?.user;
+      return true;
+    },
     async session({ session, token }) {
       if (token.email && session.user) session.user.id = token.email;
       return session;

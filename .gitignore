@@ -7,6 +7,8 @@ node_modules/
 
 # Local SQLite database
 local.db
+local.db-shm
+local.db-wal
 
 # Uploaded PDFs (binary files, not tracked)
 public/uploads/*.pdf

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import styles from "./workspace.module.css";
 import FitSignalBadge from "@/components/FitSignalBadge";
 import {
@@ -213,14 +214,18 @@ export default function WorkspacePage() {
   const [viewMode,   setViewMode]   = useState<"grid" | "list">("grid");
   const [toast,      setToast]      = useState("");
 
+  const { data: session, status } = useSession();
+
   useEffect(() => {
-    const id = "default";
+    if (status === "loading") return;
+    const id = session?.user?.email ?? "";
+    if (!id) { setLoading(false); return; }
     setUserId(id);
     listDecks(id)
       .then(setDecks)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [status, session]);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -260,7 +265,12 @@ export default function WorkspacePage() {
             <span className={styles.brandName}>PreSales Central</span>
             <span className={styles.brandTag}>AI Pre-Sales</span>
           </a>
-          <div className={styles.topBarActions} />
+          <div className={styles.topBarActions}>
+            {userId && <span className={styles.userEmail}>{userId}</span>}
+            <button className={styles.signOutBtn} onClick={() => signOut({ callbackUrl: "/login" })}>
+              Sign out
+            </button>
+          </div>
         </div>
       </header>
 
