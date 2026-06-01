@@ -262,7 +262,7 @@ export default function WorkspacePage() {
         <div className={styles.topBarInner}>
           <a href="/" className={styles.topBarBrand}>
             <img
-              src="/brand/agentic-sdlc-logo.png"
+              src="/brand/agentic-sdlc-icon-400.png"
               alt="Agentic SDLC"
               className={styles.brandImg}
               onError={e => { e.currentTarget.style.display = "none"; }}

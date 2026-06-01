@@ -43,7 +43,7 @@ function LoginForm() {
         <div className={styles.brandInner}>
           <div className={styles.logo}>
             <img
-              src="/brand/agentic-sdlc-logo.png"
+              src="/brand/agentic-sdlc-icon-400.png"
               alt="Agentic SDLC"
               className={styles.logoImg}
               onError={e => { e.currentTarget.style.display = "none"; }}

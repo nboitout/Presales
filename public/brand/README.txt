@@ -1,2 +1,1 @@
-Place brand assets here. The app references: agentic-sdlc-logo.png
-Upload your logo to: public/brand/agentic-sdlc-logo.png
+Brand assets. The app references: agentic-sdlc-icon-400.png

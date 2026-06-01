@@ -96,7 +96,7 @@ export default function DemoEntryPage() {
       <div className={styles.card}>
         <div className={styles.logoRow}>
           <img
-            src="/brand/agentic-sdlc-logo.png"
+            src="/brand/agentic-sdlc-icon-400.png"
             alt="Agentic SDLC"
             className={styles.logoImg}
             onError={e => { e.currentTarget.style.display = "none"; }}
