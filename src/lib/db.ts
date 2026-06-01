@@ -29,6 +29,8 @@ function initSchema(db: Database.Database) {
       key_questions  TEXT DEFAULT '[]',
       pdf_url        TEXT,
       slide_texts    TEXT DEFAULT '[]',
+      grounding_doc      TEXT DEFAULT '',
+      grounding_doc_name TEXT DEFAULT '',
       total_slides   INTEGER DEFAULT 0,
       share_id       TEXT UNIQUE NOT NULL,
       status         TEXT DEFAULT 'draft',
@@ -82,6 +84,8 @@ function initSchema(db: Database.Database) {
   addColumnIfMissing("prospect_sessions", "email_verified",   "email_verified INTEGER DEFAULT 0");
   addColumnIfMissing("prospect_sessions", "training_consent", "training_consent INTEGER DEFAULT 0");
   addColumnIfMissing("magic_links",       "training_consent", "training_consent INTEGER DEFAULT 0");
+  addColumnIfMissing("demo_decks",        "grounding_doc",      "grounding_doc TEXT DEFAULT ''");
+  addColumnIfMissing("demo_decks",        "grounding_doc_name", "grounding_doc_name TEXT DEFAULT ''");
 }
 
 /* ── DemoDeck helpers ─────────────────────────────────────── */
@@ -96,6 +100,8 @@ function rowToDeck(row: Record<string, unknown>): DemoDeck {
     keyQuestions:    JSON.parse((row.key_questions  as string) ?? "[]"),
     pdfUrl:          (row.pdf_url as string) ?? null,
     slideTexts:      JSON.parse((row.slide_texts  as string) ?? "[]"),
+    groundingDoc:     (row.grounding_doc as string) ?? "",
+    groundingDocName: (row.grounding_doc_name as string) ?? "",
     totalSlides:     (row.total_slides as number) ?? 0,
     shareId:         row.share_id as string,
     status:          (row.status as "draft" | "ready") ?? "draft",
@@ -154,6 +160,8 @@ export async function updateDeck(
     keyQuestions: string[];
     pdfUrl: string;
     slideTexts: string[];
+    groundingDoc: string;
+    groundingDocName: string;
     totalSlides: number;
     status: "draft" | "ready";
   }>
@@ -168,6 +176,8 @@ export async function updateDeck(
   if (patch.keyQuestions   != null) { sets.push("key_questions = ?");  vals.push(JSON.stringify(patch.keyQuestions)); }
   if (patch.pdfUrl         != null) { sets.push("pdf_url = ?");        vals.push(patch.pdfUrl); }
   if (patch.slideTexts     != null) { sets.push("slide_texts = ?");    vals.push(JSON.stringify(patch.slideTexts)); }
+  if (patch.groundingDoc     != null) { sets.push("grounding_doc = ?");      vals.push(patch.groundingDoc); }
+  if (patch.groundingDocName != null) { sets.push("grounding_doc_name = ?"); vals.push(patch.groundingDocName); }
   if (patch.totalSlides    != null) { sets.push("total_slides = ?");   vals.push(patch.totalSlides); }
   if (patch.status         != null) { sets.push("status = ?");         vals.push(patch.status); }
 

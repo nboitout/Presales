@@ -32,10 +32,13 @@ function CreateDeckModal({
   const [questText,     setQuestText]     = useState("");
   const [file,          setFile]          = useState<File | null>(null);
   const [fileName,      setFileName]      = useState("");
+  const [groundingFile,     setGroundingFile]     = useState<File | null>(null);
+  const [groundingFileName, setGroundingFileName] = useState("");
   const [dragOver,      setDragOver]      = useState(false);
   const [loading,       setLoading]       = useState(false);
   const [error,         setError]         = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const groundingRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => { setFile(f); setFileName(f.name); };
   const handleDrop = (e: React.DragEvent) => {
@@ -43,6 +46,7 @@ function CreateDeckModal({
     const f = e.dataTransfer.files[0];
     if (f) handleFile(f);
   };
+  const handleGroundingFile = (f: File) => { setGroundingFile(f); setGroundingFileName(f.name); };
 
   const handleSubmit = async () => {
     if (!productName.trim()) return;
@@ -59,14 +63,21 @@ function CreateDeckModal({
         repId,
       });
 
+      const patch: Parameters<typeof updateDeck>[1] = {};
       if (file) {
         const { url, slideTexts, pageCount } = await uploadPdf(file);
-        const updated = await updateDeck(deck.id, {
-          pdfUrl: url,
-          slideTexts,
-          totalSlides: pageCount,
-          status: "ready",
-        });
+        patch.pdfUrl = url;
+        patch.slideTexts = slideTexts;
+        patch.totalSlides = pageCount;
+        patch.status = "ready";
+      }
+      if (groundingFile) {
+        const { fullText, filename } = await uploadPdf(groundingFile);
+        patch.groundingDoc = fullText;
+        patch.groundingDocName = filename;
+      }
+      if (Object.keys(patch).length > 0) {
+        const updated = await updateDeck(deck.id, patch);
         onCreate(updated ?? deck);
       } else {
         onCreate(deck);
@@ -120,6 +131,18 @@ function CreateDeckModal({
               {fileName
                 ? (<><div className={styles.dropIcon}>✓</div><div className={styles.dropFileName}>{fileName}</div><div className={styles.dropHint}>Click to change</div></>)
                 : (<><div className={styles.dropIcon}>↑</div><div className={styles.dropPrimary}>Drop your PDF here</div><div className={styles.dropHint}>or click to browse — up to 20 MB</div></>)}
+            </div>
+          </div>
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Grounding document <span className={styles.fieldHint}>PDF, Markdown or text — deep explanations the advisor uses behind the scenes (not shown to the audience)</span></label>
+            <div
+              className={`${styles.dropZone} ${groundingFileName ? styles.hasFile : ""}`}
+              onClick={() => groundingRef.current?.click()}
+            >
+              <input ref={groundingRef} type="file" accept=".pdf,.md,.markdown,.txt" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) handleGroundingFile(f); }} />
+              {groundingFileName
+                ? (<><div className={styles.dropIcon}>✓</div><div className={styles.dropFileName}>{groundingFileName}</div><div className={styles.dropHint}>Click to change</div></>)
+                : (<><div className={styles.dropIcon}>↑</div><div className={styles.dropPrimary}>Add a grounding document</div><div className={styles.dropHint}>optional — click to browse</div></>)}
             </div>
           </div>
         </div>

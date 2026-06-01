@@ -5,7 +5,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   try {
     const deck = await db.getDeckById(params.id);
     if (!deck) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json(deck);
+    /* Grounding doc is for the AI's context only — never expose its text to the
+       client (the prospect session page fetches this endpoint). Keep the name. */
+    return NextResponse.json({ ...deck, groundingDoc: "" });
   } catch (err) {
     console.error("[GET /api/decks/[id]]", err);
     return NextResponse.json({ error: "Failed to fetch deck" }, { status: 500 });
@@ -17,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const body  = await req.json();
     const deck  = await db.updateDeck(params.id, body);
     if (!deck) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json(deck);
+    return NextResponse.json({ ...deck, groundingDoc: "" });
   } catch (err) {
     console.error("[PATCH /api/decks/[id]]", err);
     return NextResponse.json({ error: "Failed to update deck" }, { status: 500 });

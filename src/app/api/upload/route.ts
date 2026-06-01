@@ -7,8 +7,12 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      return NextResponse.json({ error: "Only PDF files are supported" }, { status: 400 });
+
+    const lower  = file.name.toLowerCase();
+    const isPdf  = lower.endsWith(".pdf");
+    const isText = /\.(md|markdown|txt)$/.test(lower);
+    if (!isPdf && !isText) {
+      return NextResponse.json({ error: "Supported file types: PDF (slides), Markdown or text (grounding doc)" }, { status: 400 });
     }
 
     const buffer   = Buffer.from(await file.arrayBuffer());
@@ -21,7 +25,13 @@ export async function POST(req: NextRequest) {
 
     const url = `/uploads/${safeName}`;
 
-    /* Extract per-page text with pdf-parse */
+    /* Plain-text / Markdown (grounding docs): the whole file is the text. */
+    if (isText) {
+      const fullText = buffer.toString("utf8");
+      return NextResponse.json({ url, filename: file.name, pageCount: 0, slideTexts: [], fullText });
+    }
+
+    /* PDF (slides): extract per-page text with pdf-parse, plus a joined fullText. */
     let slideTexts: string[] = [];
     let pageCount = 0;
     try {
@@ -41,7 +51,8 @@ export async function POST(req: NextRequest) {
       console.warn("[upload] pdf-parse failed, continuing without slide texts:", pdfErr);
     }
 
-    return NextResponse.json({ url, filename: file.name, pageCount, slideTexts });
+    const fullText = slideTexts.join("\n\n");
+    return NextResponse.json({ url, filename: file.name, pageCount, slideTexts, fullText });
   } catch (err) {
     console.error("[POST /api/upload]", err);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });

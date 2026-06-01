@@ -57,7 +57,7 @@ export function getDeck(id: string): Promise<DemoDeck> {
 
 export function updateDeck(
   id: string,
-  patch: Partial<Pick<DemoDeck, "productName" | "targetPersona" | "differentiators" | "keyQuestions" | "pdfUrl" | "slideTexts" | "totalSlides" | "status">>
+  patch: Partial<Pick<DemoDeck, "productName" | "targetPersona" | "differentiators" | "keyQuestions" | "pdfUrl" | "slideTexts" | "groundingDoc" | "groundingDocName" | "totalSlides" | "status">>
 ): Promise<DemoDeck> {
   return request<DemoDeck>(`/api/decks/${id}`, {
     method: "PATCH",
@@ -80,6 +80,7 @@ export async function uploadPdf(file: File): Promise<{
   filename: string;
   pageCount: number;
   slideTexts: string[];
+  fullText: string;
 }> {
   const fd = new FormData();
   fd.append("file", file);

@@ -10,6 +10,8 @@ export interface DemoDeck {
   keyQuestions: string[];
   pdfUrl: string | null;
   slideTexts: string[];
+  groundingDoc: string;
+  groundingDocName: string;
   totalSlides: number;
   shareId: string;
   status: "draft" | "ready";
