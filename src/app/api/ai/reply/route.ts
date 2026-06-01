@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnthropicClient, AI_MODEL, buildGroundedSystem } from "@/lib/anthropic";
+import { getLLMClient, AI_MODEL, buildGroundedSystem } from "@/lib/llm";
 import * as db from "@/lib/db";
 
 const FALLBACK = { reply: "That's really helpful context. Let me know if you'd like to explore another aspect of this.", advanceSlide: false };
@@ -41,12 +41,13 @@ Instructions:
 Return valid JSON only, no markdown fences:
 {"reply": "...", "advanceSlide": true/false}`;
 
-    const client  = getAnthropicClient();
-    const message = await client.messages.create({
-      model:      AI_MODEL,
-      max_tokens: 512,
-      system,
-      messages:   [
+    const client  = getLLMClient();
+    const completion = await client.chat.completions.create({
+      model:       AI_MODEL,
+      max_tokens:  512,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: system },
         ...((chatHistory as { role: string; text: string }[])?.slice(-8).map(m => ({
           role:    (m.role === "ai" ? "assistant" : "user") as "assistant" | "user",
           content: m.text,
@@ -55,7 +56,7 @@ Return valid JSON only, no markdown fences:
       ],
     });
 
-    const raw = message.content[0].type === "text" ? message.content[0].text.trim() : "";
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
     try {
       const parsed = JSON.parse(raw);
       return NextResponse.json({ reply: parsed.reply ?? FALLBACK.reply, advanceSlide: Boolean(parsed.advanceSlide) });

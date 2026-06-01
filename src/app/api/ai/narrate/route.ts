@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnthropicClient, AI_MODEL, buildGroundedSystem } from "@/lib/anthropic";
+import { getLLMClient, AI_MODEL, buildGroundedSystem } from "@/lib/llm";
 import * as db from "@/lib/db";
 
 const FALLBACK = { narration: "Let me walk you through this section.", question: "What are your current challenges in this area?" };
@@ -44,12 +44,13 @@ Your task:
 Return valid JSON only, no markdown fences:
 {"narration": "...", "question": "..."}`;
 
-    const client = getAnthropicClient();
-    const message = await client.messages.create({
-      model:      AI_MODEL,
-      max_tokens: 512,
-      system,
-      messages:   [
+    const client = getLLMClient();
+    const completion = await client.chat.completions.create({
+      model:       AI_MODEL,
+      max_tokens:  512,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: system },
         ...((chatHistory as { role: string; text: string }[])?.slice(-6).map(m => ({
           role:    (m.role === "ai" ? "assistant" : "user") as "assistant" | "user",
           content: m.text,
@@ -58,7 +59,7 @@ Return valid JSON only, no markdown fences:
       ],
     });
 
-    const raw = message.content[0].type === "text" ? message.content[0].text.trim() : "";
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
     try {
       const parsed = JSON.parse(raw);
       return NextResponse.json({ narration: parsed.narration ?? FALLBACK.narration, question: parsed.question ?? FALLBACK.question });

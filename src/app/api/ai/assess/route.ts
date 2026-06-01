@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAnthropicClient, AI_MODEL } from "@/lib/anthropic";
+import { getLLMClient, AI_MODEL } from "@/lib/llm";
 import type { FitSignal, FitConfidence } from "@/lib/types";
 
 const FALLBACK = {
@@ -37,15 +37,18 @@ Extract and return a fit assessment JSON:
 
 Return valid JSON only, no markdown fences.`;
 
-    const client  = getAnthropicClient();
-    const message = await client.messages.create({
-      model:      AI_MODEL,
-      max_tokens: 512,
-      system:     "You are a sales intelligence analyst. Extract fit signals from prospect conversations. Always respond with valid JSON only.",
-      messages:   [{ role: "user", content: prompt }],
+    const client  = getLLMClient();
+    const completion = await client.chat.completions.create({
+      model:       AI_MODEL,
+      max_tokens:  512,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: "You are a sales intelligence analyst. Extract fit signals from prospect conversations. Always respond with valid JSON only." },
+        { role: "user",   content: prompt },
+      ],
     });
 
-    const raw = message.content[0].type === "text" ? message.content[0].text.trim() : "";
+    const raw = completion.choices[0]?.message?.content?.trim() ?? "";
     try {
       const parsed = JSON.parse(raw);
       return NextResponse.json({
