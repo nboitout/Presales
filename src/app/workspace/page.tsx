@@ -161,12 +161,16 @@ function CreateDeckModal({
   );
 }
 
+const CARD_ACCENTS = ["#2563eb", "#1a7f37", "#7c5cff", "#d97706", "#0891b2", "#db2777"];
+
 function DeckCard({
   deck,
+  index,
   onDelete,
   onCopyLink,
 }: {
   deck: DemoDeck;
+  index: number;
   onDelete: (id: string) => void;
   onCopyLink: (shareId: string) => void;
 }) {
@@ -177,6 +181,12 @@ function DeckCard({
   const dateStr  = new Date(deck.createdAt).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
   const stats    = deck.sessionStats;
   const total    = stats?.total ?? deck.sessionCount ?? 0;
+  const accent   = CARD_ACCENTS[index % CARD_ACCENTS.length];
+
+  /* Setup completeness: details → slides → grounding doc → published. */
+  const steps = [true, deck.totalSlides > 0, Boolean(deck.groundingDocName), deck.status === "ready"];
+  const done  = steps.filter(Boolean).length;
+  const pct   = Math.round((done / steps.length) * 100);
 
   const handleCopy = () => {
     onCopyLink(deck.shareId);
@@ -187,8 +197,9 @@ function DeckCard({
 
   return (
     <div className={styles.card} onClick={() => router.push(`/workspace/demo/${deck.id}/sessions`)}>
-      <div className={styles.cardBand}>
-        <div className={styles.cardInitials}>{initials}</div>
+      <div className={styles.cardAccent} style={{ background: accent }} />
+      <div className={styles.cardHead}>
+        <span className={styles.cardWatermark} style={{ color: accent }}>{initials}</span>
         <div className={styles.cardMenu} onClick={e => e.stopPropagation()}>
           <button className={styles.menuTrigger} onClick={() => setMenuOpen(!menuOpen)}>⋯</button>
           {menuOpen && (
@@ -202,23 +213,28 @@ function DeckCard({
       </div>
       <div className={styles.cardBody}>
         <h3 className={styles.cardTitle}>{deck.productName}</h3>
-        <div className={styles.cardMeta}>
-          {deck.targetPersona && <div className={styles.cardPersona}>{deck.targetPersona}</div>}
-          <div className={styles.cardDate}>{dateStr}</div>
+        {deck.targetPersona && <div className={styles.cardAuthor}>{deck.targetPersona}</div>}
+        <div className={styles.cardDate}>{dateStr}</div>
+        <div className={styles.progressRow}>
+          <div className={styles.progressTrack}>
+            <div className={styles.progressFill} style={{ width: `${pct}%`, background: accent }} />
+          </div>
+          <span className={styles.progressPct} style={{ color: accent }}>{pct}%</span>
         </div>
       </div>
       <div className={styles.cardFooter} onClick={e => e.stopPropagation()}>
         <div className={styles.cardFooterLeft}>
-          <span className={`${styles.statusBadge} ${deck.status === "ready" ? styles.statusReady : styles.statusDraft}`}>
+          {total > 0 && <span className={`${styles.chip} ${styles.chipActive}`}>In progress</span>}
+          <span className={`${styles.chip} ${deck.status === "ready" ? styles.chipReady : styles.chipDraft}`}>
             {deck.status === "ready" ? "Ready" : "Draft"}
           </span>
-          <span className={styles.sessionCount}>{total} {total === 1 ? "session" : "sessions"}</span>
+          {deck.totalSlides > 0 && <span className={`${styles.chip} ${styles.chipMuted}`}>{deck.totalSlides} slides</span>}
         </div>
         <button
-          className={styles.sessionsBtn}
+          className={styles.detailsBtn}
           onClick={e => { e.stopPropagation(); router.push(`/workspace/demo/${deck.id}/sessions`); }}
         >
-          Sessions →
+          Details →
         </button>
       </div>
     </div>
@@ -368,8 +384,8 @@ export default function WorkspacePage() {
             </div>
           ) : viewMode === "grid" ? (
             <div className={styles.grid}>
-              {filtered.map(d => (
-                <DeckCard key={d.id} deck={d} onDelete={handleDelete} onCopyLink={handleCopyLink} />
+              {filtered.map((d, i) => (
+                <DeckCard key={d.id} deck={d} index={i} onDelete={handleDelete} onCopyLink={handleCopyLink} />
               ))}
             </div>
           ) : (

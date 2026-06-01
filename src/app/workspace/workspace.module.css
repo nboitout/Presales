@@ -134,16 +134,14 @@
 }
 .card:hover { box-shadow: var(--shadow-float); transform: translateY(-2px); }
 
-.cardBand {
-  background: var(--surface-high);
-  padding: 16px 16px 12px;
-  display: flex; align-items: center; justify-content: space-between;
+.cardAccent { height: 4px; width: 100%; }
+.cardHead {
+  padding: 14px 18px 0;
+  display: flex; align-items: flex-start; justify-content: space-between;
 }
-.cardInitials {
-  width: 36px; height: 36px;
-  background: var(--primary-gradient); color: #fff;
-  font-family: var(--font-label); font-size: 0.875rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; border-radius: 4px;
+.cardWatermark {
+  font-family: var(--font-display); font-size: 2.25rem; font-weight: 700;
+  line-height: 1; letter-spacing: -0.02em; opacity: 0.28; user-select: none;
 }
 
 .cardMenu { position: relative; }
@@ -167,33 +165,43 @@
 .menuItemDanger { color: #b3261e; }
 .menuItemDanger:hover { background: #fce8e6; }
 
-.cardBody { padding: 16px; flex: 1; }
+.cardBody { padding: 10px 18px 16px; flex: 1; display: flex; flex-direction: column; }
 .cardTitle {
-  font-family: var(--font-display); font-size: 1rem; font-weight: 700;
-  color: var(--on-surface); letter-spacing: -0.02em; margin-bottom: 8px; line-height: 1.3;
+  font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700;
+  color: var(--on-surface); letter-spacing: -0.02em; margin-bottom: 6px; line-height: 1.3;
 }
-.cardMeta { display: flex; flex-direction: column; gap: 3px; }
-.cardPersona { font-family: var(--font-label); font-size: 0.6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); }
-.cardDate { font-family: var(--font-body); font-size: 0.8125rem; color: var(--on-surface-variant); }
+.cardAuthor { font-family: var(--font-body); font-size: 0.875rem; color: var(--on-surface); }
+.cardDate { font-family: var(--font-body); font-size: 0.8125rem; color: var(--on-surface-variant); margin-top: 2px; }
+
+.progressRow { display: flex; align-items: center; gap: 12px; margin-top: auto; padding-top: 18px; }
+.progressTrack {
+  flex: 1; height: 4px; border-radius: 999px;
+  background: var(--surface-high); overflow: hidden;
+}
+.progressFill { height: 100%; border-radius: 999px; transition: width 0.3s; }
+.progressPct { font-family: var(--font-label); font-size: 0.75rem; font-weight: 700; }
 
 .cardFooter {
-  padding: 12px 16px; border-top: 1px solid var(--outline-variant);
+  padding: 12px 18px; border-top: 1px solid var(--outline-variant);
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
 }
-.cardFooterLeft { display: flex; align-items: center; gap: 8px; }
-.statusBadge {
-  font-family: var(--font-label); font-size: 0.6875rem; font-weight: 700;
+.cardFooterLeft { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font-family: var(--font-label); font-size: 0.625rem; font-weight: 700;
   text-transform: uppercase; letter-spacing: 0.08em;
-  padding: 3px 8px; border-radius: 3px;
+  padding: 3px 8px; border-radius: 4px;
 }
-.statusReady  { color: var(--fit-strong);  background: var(--fit-strong-bg); }
-.statusDraft  { color: var(--on-surface-variant); background: var(--surface-high); }
+.chipActive { color: var(--primary); background: var(--tertiary-fixed); }
+.chipReady  { color: var(--fit-strong); background: var(--fit-strong-bg); }
+.chipDraft  { color: var(--on-surface-variant); background: var(--surface-high); }
+.chipMuted  { color: var(--on-surface-variant); background: var(--surface-high); }
 .sessionCount { font-family: var(--font-body); font-size: 0.8125rem; color: var(--on-surface-variant); }
-.sessionsBtn {
+.detailsBtn {
   font-family: var(--font-label); font-size: 0.8125rem; font-weight: 600;
-  color: var(--primary); background: none; border: none; cursor: pointer; padding: 4px 0;
+  color: var(--on-surface); background: none; border: none; cursor: pointer;
+  padding: 4px 0; white-space: nowrap;
 }
-.sessionsBtn:hover { text-decoration: underline; }
+.detailsBtn:hover { color: var(--primary); }
 
 /* ── List view ───────────────────────────────────────────── */
 .listView { display: flex; flex-direction: column; gap: 8px; }
