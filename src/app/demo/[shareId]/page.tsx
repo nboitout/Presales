@@ -15,6 +15,7 @@ interface DeckMeta {
   productName: string;
   targetPersona: string;
   status: string;
+  contactEmail?: string;
 }
 
 export default function DemoEntryPage() {
@@ -179,6 +180,14 @@ export default function DemoEntryPage() {
             </p>
           </>
         )}
+
+        <p className={styles.privacyFooter}>
+          We never sell your data. To withdraw consent or have your session deleted,{" "}
+          {deck.contactEmail
+            ? <a className={styles.privacyLink} href={`mailto:${deck.contactEmail}?subject=Data%20deletion%20request`}>contact us</a>
+            : "contact us"}
+          .
+        </p>
       </div>
     </div>
   );

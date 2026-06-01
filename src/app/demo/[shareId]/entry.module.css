@@ -111,6 +111,15 @@
   color: var(--on-surface-variant); opacity: 0.75;
 }
 
+.privacyFooter {
+  font-family: var(--font-body); font-size: 0.6875rem; line-height: 1.5;
+  color: var(--on-surface-variant); opacity: 0.45;
+  text-align: center; margin-top: 24px;
+  border-top: 1px solid var(--outline-variant, rgba(0,0,0,0.08)); padding-top: 16px;
+}
+.privacyLink { color: var(--primary); text-decoration: none; }
+.privacyLink:hover { text-decoration: underline; }
+
 /* Loading */
 .loadingWrap { display: flex; gap: 8px; justify-content: center; }
 .loadingDot {

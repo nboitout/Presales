@@ -93,6 +93,14 @@
 .notesTextarea::placeholder { color: var(--on-surface-variant); opacity: 0.4; }
 .notesHint { font-family: var(--font-body); font-size: 0.75rem; color: var(--on-surface-variant); opacity: 0.5; }
 
+.deleteBtn {
+  font-family: var(--font-display); font-size: 0.8125rem; font-weight: 600;
+  color: #b3261e; background: transparent;
+  border: 1px solid #b3261e; border-radius: 8px;
+  padding: 8px 14px; margin-bottom: 6px; cursor: pointer;
+}
+.deleteBtn:hover { background: #b3261e; color: #fff; }
+
 /* Transcript */
 .transcript { display: flex; flex-direction: column; gap: 14px; max-height: 70vh; overflow-y: auto; }
 .aiMsg, .prospectMsg {

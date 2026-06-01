@@ -272,6 +272,14 @@ export async function consumeMagicLink(token: string, sessionId: string): Promis
   ).run(sessionId, token);
 }
 
+export async function deleteSession(id: string): Promise<boolean> {
+  const db = getDb();
+  /* Drop any magic link that minted this session, then the session itself. */
+  db.prepare("DELETE FROM magic_links WHERE session_id = ?").run(id);
+  const res = db.prepare("DELETE FROM prospect_sessions WHERE id = ?").run(id);
+  return res.changes > 0;
+}
+
 export async function getSessionById(id: string): Promise<ProspectSession | null> {
   const row = getDb().prepare("SELECT * FROM prospect_sessions WHERE id = ?").get(id) as Record<string, unknown> | undefined;
   return row ? rowToSession(row) : null;

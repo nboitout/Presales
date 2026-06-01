@@ -46,6 +46,14 @@ export default function SessionDetailPage() {
     }).catch(console.error);
   };
 
+  const deleteSession = () => {
+    if (!session) return;
+    if (!confirm(`Permanently delete ${session.prospectName}'s session and all its data? This honors a deletion request and cannot be undone.`)) return;
+    fetch(`/api/sessions/${sessionId}`, { method: "DELETE" })
+      .then(r => { if (r.ok) router.push(`/workspace/demo/${demoId}/sessions`); })
+      .catch(console.error);
+  };
+
   const maxTime = session?.slideHistory?.reduce((m, e) => Math.max(m, e.timeSpentSec), 1) ?? 1;
 
   if (loading) return (
@@ -154,6 +162,15 @@ export default function SessionDetailPage() {
                   onBlur={saveNotes}
                 />
                 <div className={styles.notesHint}>Saved automatically on blur</div>
+              </section>
+
+              {/* Data deletion (GDPR / consent withdrawal) */}
+              <section className={styles.section}>
+                <div className={styles.sectionLabel}>Privacy</div>
+                <button className={styles.deleteBtn} onClick={deleteSession}>
+                  Delete this session &amp; all data
+                </button>
+                <div className={styles.notesHint}>Use to honor a deletion or consent-withdrawal request.</div>
               </section>
             </div>
 

@@ -11,6 +11,7 @@ export async function GET(_req: NextRequest, { params }: { params: { shareId: st
       productName:   deck.productName,
       targetPersona: deck.targetPersona,
       status:        deck.status,
+      contactEmail:  process.env.PRIVACY_CONTACT_EMAIL ?? "",
     });
   } catch (err) {
     console.error("[GET /api/share/[shareId]]", err);
