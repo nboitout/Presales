@@ -74,7 +74,11 @@ export default function SessionDetailPage() {
           </button>
           <div className={styles.sessionMeta}>
             <span className={styles.prospectNameHeader}>{session.prospectName}</span>
-            {session.prospectEmail && <span className={styles.prospectEmailHeader}>{session.prospectEmail}</span>}
+            {session.prospectEmail && (
+              <span className={styles.prospectEmailHeader}>
+                {session.prospectEmail}{session.emailVerified ? " · ✓ verified" : ""}
+              </span>
+            )}
             <span className={styles.sessionDate}>{fmtDate(session.createdAt)}</span>
             <span className={styles.sessionDuration}>{fmtDuration(session.createdAt, session.completedAt)}</span>
           </div>

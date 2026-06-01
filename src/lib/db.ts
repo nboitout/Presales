@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import type { DemoDeck, ProspectSession, FitSignal, FitConfidence } from "./types";
+import type { DemoDeck, ProspectSession, MagicLink, FitSignal, FitConfidence } from "./types";
 
 /* ── DB file lives in project root during local dev ─────── */
 const DB_PATH = path.join(process.cwd(), "local.db");
@@ -41,6 +41,7 @@ function initSchema(db: Database.Database) {
       demo_deck_id         TEXT REFERENCES demo_decks(id) ON DELETE CASCADE,
       prospect_name        TEXT NOT NULL,
       prospect_email       TEXT,
+      email_verified       INTEGER DEFAULT 0,
       status               TEXT DEFAULT 'active',
       current_slide        INTEGER DEFAULT 1,
       total_slides         INTEGER DEFAULT 0,
@@ -55,7 +56,25 @@ function initSchema(db: Database.Database) {
       created_at           TEXT DEFAULT (datetime('now')),
       completed_at         TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS magic_links (
+      token          TEXT PRIMARY KEY,
+      deck_id        TEXT NOT NULL,
+      share_id       TEXT NOT NULL,
+      prospect_name  TEXT NOT NULL,
+      prospect_email TEXT NOT NULL,
+      session_id     TEXT,
+      expires_at     TEXT NOT NULL,
+      used_at        TEXT,
+      created_at     TEXT DEFAULT (datetime('now'))
+    );
   `);
+
+  /* ── Migrations for pre-existing DBs ──────────────────────── */
+  const cols = db.prepare("PRAGMA table_info(prospect_sessions)").all() as { name: string }[];
+  if (!cols.some(c => c.name === "email_verified")) {
+    db.exec("ALTER TABLE prospect_sessions ADD COLUMN email_verified INTEGER DEFAULT 0");
+  }
 }
 
 /* ── DemoDeck helpers ─────────────────────────────────────── */
@@ -163,6 +182,7 @@ function rowToSession(row: Record<string, unknown>): ProspectSession {
     demoDeckId:           row.demo_deck_id as string,
     prospectName:         row.prospect_name as string,
     prospectEmail:        (row.prospect_email as string) ?? null,
+    emailVerified:        Boolean(row.email_verified),
     status:               (row.status as "active" | "completed") ?? "active",
     currentSlide:         (row.current_slide as number) ?? 1,
     totalSlides:          (row.total_slides as number) ?? 0,
@@ -183,15 +203,61 @@ export async function createSession(data: {
   demoDeckId: string;
   prospectName: string;
   prospectEmail?: string;
+  emailVerified?: boolean;
   totalSlides: number;
 }): Promise<ProspectSession> {
   const id = uuidv4();
   const db = getDb();
   db.prepare(`
-    INSERT INTO prospect_sessions (id, demo_deck_id, prospect_name, prospect_email, total_slides)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(id, data.demoDeckId, data.prospectName, data.prospectEmail ?? null, data.totalSlides);
+    INSERT INTO prospect_sessions (id, demo_deck_id, prospect_name, prospect_email, email_verified, total_slides)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(id, data.demoDeckId, data.prospectName, data.prospectEmail ?? null,
+         data.emailVerified ? 1 : 0, data.totalSlides);
   return rowToSession(db.prepare("SELECT * FROM prospect_sessions WHERE id = ?").get(id) as Record<string, unknown>);
+}
+
+/* ── MagicLink helpers ────────────────────────────────────── */
+
+function rowToMagicLink(row: Record<string, unknown>): MagicLink {
+  return {
+    token:         row.token as string,
+    deckId:        row.deck_id as string,
+    shareId:       row.share_id as string,
+    prospectName:  row.prospect_name as string,
+    prospectEmail: row.prospect_email as string,
+    sessionId:     (row.session_id as string) ?? null,
+    expiresAt:     row.expires_at as string,
+    usedAt:        (row.used_at as string) ?? null,
+    createdAt:     row.created_at as string,
+  };
+}
+
+export async function createMagicLink(data: {
+  deckId: string;
+  shareId: string;
+  prospectName: string;
+  prospectEmail: string;
+  ttlMinutes?: number;
+}): Promise<MagicLink> {
+  const token     = uuidv4() + uuidv4().replace(/-/g, "");
+  const expiresAt = new Date(Date.now() + (data.ttlMinutes ?? 30) * 60_000).toISOString();
+  const db = getDb();
+  db.prepare(`
+    INSERT INTO magic_links (token, deck_id, share_id, prospect_name, prospect_email, expires_at)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(token, data.deckId, data.shareId, data.prospectName, data.prospectEmail, expiresAt);
+  return rowToMagicLink(db.prepare("SELECT * FROM magic_links WHERE token = ?").get(token) as Record<string, unknown>);
+}
+
+export async function getMagicLink(token: string): Promise<MagicLink | null> {
+  const row = getDb().prepare("SELECT * FROM magic_links WHERE token = ?").get(token) as Record<string, unknown> | undefined;
+  return row ? rowToMagicLink(row) : null;
+}
+
+export async function consumeMagicLink(token: string, sessionId: string): Promise<void> {
+  getDb().prepare(
+    "UPDATE magic_links SET used_at = datetime('now'), session_id = ? WHERE token = ?"
+  ).run(sessionId, token);
 }
 
 export async function getSessionById(id: string): Promise<ProspectSession | null> {

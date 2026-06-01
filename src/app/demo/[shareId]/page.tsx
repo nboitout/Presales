@@ -1,8 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import styles from "./entry.module.css";
+
+const LINK_ERRORS: Record<string, string> = {
+  invalid: "That link isn't valid. Please request a new one below.",
+  expired: "That link has expired. Request a fresh one below.",
+  used:    "That link was already used. Request a new one below.",
+};
 
 interface DeckMeta {
   deckId: string;
@@ -13,7 +19,7 @@ interface DeckMeta {
 
 export default function DemoEntryPage() {
   const params  = useParams<{ shareId: string }>();
-  const router  = useRouter();
+  const search  = useSearchParams();
   const shareId = params.shareId;
 
   const [deck,    setDeck]    = useState<DeckMeta | null>(null);
@@ -22,6 +28,8 @@ export default function DemoEntryPage() {
   const [name,    setName]    = useState("");
   const [email,   setEmail]   = useState("");
   const [starting, setStarting] = useState(false);
+  const [sent,    setSent]    = useState(false);
+  const [devLink, setDevLink] = useState("");
 
   useEffect(() => {
     fetch(`/api/share/${shareId}`)
@@ -31,21 +39,30 @@ export default function DemoEntryPage() {
       .finally(() => setLoading(false));
   }, [shareId]);
 
+  /* Surface errors bounced back from the magic-link verify route. */
+  useEffect(() => {
+    const code = search.get("linkError");
+    if (code && LINK_ERRORS[code]) setError(LINK_ERRORS[code]);
+  }, [search]);
+
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !deck) return;
+    if (!name.trim() || !email.trim() || !deck) return;
+    setError("");
     setStarting(true);
     try {
-      const res = await fetch("/api/sessions", {
+      const res = await fetch(`/api/share/${shareId}/request-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ demoDeckId: deck.deckId, prospectName: name.trim(), prospectEmail: email.trim() || undefined }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim() }),
       });
-      if (!res.ok) throw new Error("Failed to start session");
-      const { sessionId } = await res.json();
-      router.push(`/demo/${shareId}/session?sid=${sessionId}`);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Failed to send your link");
+      if (data.devLink) setDevLink(data.devLink);
+      setSent(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start the demo. Please try again.");
+      setError(err instanceof Error ? err.message : "Could not send your link. Please try again.");
+    } finally {
       setStarting(false);
     }
   };
@@ -82,46 +99,71 @@ export default function DemoEntryPage() {
 
         <div className={styles.productBadge}>{deck.targetPersona || "Product demo"}</div>
         <h1 className={styles.productName}>{deck.productName}</h1>
-        <p className={styles.productTagline}>
-          Your personal AI pre-sales specialist will walk you through {deck.productName}, ask about your setup, and help you understand if it&apos;s a fit.
-        </p>
 
-        <form onSubmit={handleStart} className={styles.form}>
-          <div className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>Your name *</label>
-            <input
-              className={styles.fieldInput}
-              type="text"
-              placeholder="e.g. Alex Johnson"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-              autoFocus
-            />
-          </div>
-          <div className={styles.fieldGroup}>
-            <label className={styles.fieldLabel}>Work email <span className={styles.optional}>(optional)</span></label>
-            <input
-              className={styles.fieldInput}
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-            />
-          </div>
+        {sent ? (
+          <>
+            <p className={styles.productTagline}>
+              Check your inbox — we sent a secure, one-time link to <strong>{email}</strong>.
+              Open it on this device to start your walkthrough. It expires in 30 minutes.
+            </p>
+            {devLink && (
+              <div className={styles.errorMsg}>
+                Dev mode (no email provider configured):{" "}
+                <a href={devLink}>open your link</a>
+              </div>
+            )}
+            <button className={styles.startBtn} type="button" onClick={() => { setSent(false); setDevLink(""); }}>
+              Use a different email
+            </button>
+            <p className={styles.hint}>Didn&apos;t get it? Check spam, or try again.</p>
+          </>
+        ) : (
+          <>
+            <p className={styles.productTagline}>
+              Your personal AI pre-sales specialist will walk you through {deck.productName}, ask about your setup, and help you understand if it&apos;s a fit.
+            </p>
 
-          {error && <div className={styles.errorMsg}>{error}</div>}
+            <form onSubmit={handleStart} className={styles.form}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Your name *</label>
+                <input
+                  className={styles.fieldInput}
+                  type="text"
+                  placeholder="e.g. Alex Johnson"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Work email *</label>
+                <input
+                  className={styles.fieldInput}
+                  type="email"
+                  placeholder="you@company.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                />
+              </div>
 
-          <button
-            className={styles.startBtn}
-            type="submit"
-            disabled={!name.trim() || starting || deck.status !== "ready"}
-          >
-            {starting ? "Starting…" : deck.status !== "ready" ? "Demo not ready yet" : "Start Demo →"}
-          </button>
-        </form>
+              {error && <div className={styles.errorMsg}>{error}</div>}
 
-        <p className={styles.hint}>Takes about 5 minutes · No account required</p>
+              <button
+                className={styles.startBtn}
+                type="submit"
+                disabled={!name.trim() || !email.trim() || starting || deck.status !== "ready"}
+              >
+                {starting ? "Sending…" : deck.status !== "ready" ? "Demo not ready yet" : "Email me a secure link →"}
+              </button>
+            </form>
+
+            <p className={styles.hint}>
+              Takes about 5 minutes · No password · Your data is never sold or used to train models
+            </p>
+          </>
+        )}
       </div>
     </div>
   );

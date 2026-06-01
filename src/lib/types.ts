@@ -39,6 +39,7 @@ export interface ProspectSession {
   demoDeckId: string;
   prospectName: string;
   prospectEmail: string | null;
+  emailVerified: boolean;
   status: "active" | "completed";
   currentSlide: number;
   totalSlides: number;
@@ -52,6 +53,18 @@ export interface ProspectSession {
   repNotes: string | null;
   createdAt: string;
   completedAt: string | null;
+}
+
+export interface MagicLink {
+  token: string;
+  deckId: string;
+  shareId: string;
+  prospectName: string;
+  prospectEmail: string;
+  sessionId: string | null;
+  expiresAt: string;
+  usedAt: string | null;
+  createdAt: string;
 }
 
 export interface NarrateResponse {

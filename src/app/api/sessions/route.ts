@@ -25,6 +25,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  /* Prospect sessions are created only after email verification, via the
+     magic-link verify route. This endpoint is reserved for the authenticated
+     rep (e.g. creating a session on a prospect's behalf). */
+  const authSession = await auth();
+  if (!authSession?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   try {
     const body = await req.json();
     if (!body.demoDeckId || !body.prospectName) {
@@ -37,6 +43,7 @@ export async function POST(req: NextRequest) {
       demoDeckId:    body.demoDeckId,
       prospectName:  body.prospectName,
       prospectEmail: body.prospectEmail,
+      emailVerified: false,
       totalSlides:   deck.totalSlides,
     });
     return NextResponse.json({ sessionId: session.id, deck }, { status: 201 });

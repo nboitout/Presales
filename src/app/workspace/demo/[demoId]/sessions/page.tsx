@@ -130,7 +130,11 @@ export default function SessionsListPage() {
                     <div key={s.id} className={styles.tableRow} onClick={() => router.push(`/workspace/demo/${demoId}/sessions/${s.id}`)}>
                       <div className={styles.colName}>
                         <div className={styles.prospectName}>{s.prospectName}</div>
-                        {s.prospectEmail && <div className={styles.prospectEmail}>{s.prospectEmail}</div>}
+                        {s.prospectEmail && (
+                          <div className={styles.prospectEmail}>
+                            {s.prospectEmail}{s.emailVerified ? " ✓" : ""}
+                          </div>
+                        )}
                       </div>
                       <div className={styles.colDate}>{fmtDate(s.createdAt)}</div>
                       <div className={styles.colFit}><FitSignalBadge signal={s.fitSignal} size="sm" /></div>
