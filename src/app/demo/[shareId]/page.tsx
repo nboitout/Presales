@@ -157,8 +157,9 @@ export default function DemoEntryPage() {
                   onChange={e => setConsent(e.target.checked)}
                 />
                 <span className={styles.consentText}>
-                  Optional: I allow my anonymized conversation to be used to improve this service.
-                  Leaving this unchecked means your session is never used for training.
+                  Optional: I allow this conversation, including my name and email, to be used to
+                  improve this service. Leaving this unchecked means your session is never used for
+                  training. You can withdraw consent and request deletion at any time.
                 </span>
               </label>
 
