@@ -25,6 +25,14 @@
   margin-bottom: 48px;
 }
 
+.logoImg {
+  height: 30px;
+  width: auto;
+  max-width: 180px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .logoDot {
   width: 28px;
   height: 28px;

@@ -261,7 +261,12 @@ export default function WorkspacePage() {
       <header className={styles.topBar}>
         <div className={styles.topBarInner}>
           <a href="/" className={styles.topBarBrand}>
-            <div className={styles.brandDot} />
+            <img
+              src="/brand/agentic-sdlc-logo.png"
+              alt="Agentic SDLC"
+              className={styles.brandImg}
+              onError={e => { e.currentTarget.style.display = "none"; }}
+            />
             <span className={styles.brandName}>Forward Deployed Advisor</span>
             <span className={styles.brandTag}>Agentic SDLC</span>
           </a>

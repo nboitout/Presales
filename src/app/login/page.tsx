@@ -42,7 +42,12 @@ function LoginForm() {
       <div className={styles.brand}>
         <div className={styles.brandInner}>
           <div className={styles.logo}>
-            <div className={styles.logoDot} />
+            <img
+              src="/brand/agentic-sdlc-logo.png"
+              alt="Agentic SDLC"
+              className={styles.logoImg}
+              onError={e => { e.currentTarget.style.display = "none"; }}
+            />
             <span className={styles.logoName}>Forward Deployed Advisor</span>
           </div>
           <h1 className={styles.brandTagline}>

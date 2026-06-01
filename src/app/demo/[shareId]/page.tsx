@@ -95,7 +95,12 @@ export default function DemoEntryPage() {
     <div className={styles.page}>
       <div className={styles.card}>
         <div className={styles.logoRow}>
-          <div className={styles.logoDot} />
+          <img
+            src="/brand/agentic-sdlc-logo.png"
+            alt="Agentic SDLC"
+            className={styles.logoImg}
+            onError={e => { e.currentTarget.style.display = "none"; }}
+          />
           <span className={styles.logoName}>Forward Deployed Advisor</span>
         </div>
 
