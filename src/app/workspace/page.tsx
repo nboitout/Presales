@@ -262,8 +262,8 @@ export default function WorkspacePage() {
         <div className={styles.topBarInner}>
           <a href="/" className={styles.topBarBrand}>
             <div className={styles.brandDot} />
-            <span className={styles.brandName}>PreSales Central</span>
-            <span className={styles.brandTag}>AI Pre-Sales</span>
+            <span className={styles.brandName}>Forward Deployed Advisor</span>
+            <span className={styles.brandTag}>Agentic SDLC</span>
           </a>
           <div className={styles.topBarActions}>
             {userId && <span className={styles.userEmail}>{userId}</span>}

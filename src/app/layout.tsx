@@ -4,13 +4,13 @@ import AuthProvider from "@/components/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PreSales Central — AI-Guided Technical Demos",
+  title: "Forward Deployed Advisor — AI-Guided Technical Walkthroughs",
   description:
-    "Turn your technical docs into interactive AI-guided demos. Let an AI pre-sales agent walk prospects through your product, ask discovery questions, and surface fit signals.",
+    "Turn your decks into interactive AI-guided walkthroughs. An AI advisor presents your slides to executives, asks discovery questions, and surfaces fit signals.",
   openGraph: {
-    title: "PreSales Central — AI-Guided Technical Demos",
+    title: "Forward Deployed Advisor — AI-Guided Technical Walkthroughs",
     description:
-      "AI pre-sales agent that presents your docs, discovers pain points, and qualifies prospects.",
+      "AI advisor that presents your slides, discovers priorities, and qualifies fit.",
     type: "website",
   },
 };

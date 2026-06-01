@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
       ? (differentiators as string[]).map((d: string) => `- ${d}`).join("\n")
       : "(none provided)";
 
-    const prompt = `You are a pre-sales specialist for ${productName} presenting a technical demo to a ${targetPersona || "prospect"}.
+    const prompt = `You are a forward deployed advisor for ${productName} presenting a technical demo to a ${targetPersona || "prospect"}.
 The prospect is currently viewing slide ${slideNum}.
 
 Slide content:
@@ -39,7 +39,7 @@ Return valid JSON only, no markdown fences:
     const message = await client.messages.create({
       model:      AI_MODEL,
       max_tokens: 512,
-      system:     "You are a helpful, concise AI pre-sales specialist. Always respond with valid JSON only.",
+      system:     "You are a helpful, concise AI forward deployed advisor. Always respond with valid JSON only.",
       messages:   [
         ...((chatHistory as { role: string; text: string }[])?.slice(-6).map(m => ({
           role:    (m.role === "ai" ? "assistant" : "user") as "assistant" | "user",

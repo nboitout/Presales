@@ -181,7 +181,7 @@ export default function SessionDetailPage() {
                 <div className={styles.transcript}>
                   {session.chatHistory?.map((msg, i) => (
                     <div key={i} className={msg.role === "ai" ? styles.aiMsg : styles.prospectMsg}>
-                      <div className={styles.msgRole}>{msg.role === "ai" ? "AI Pre-Sales" : session.prospectName}</div>
+                      <div className={styles.msgRole}>{msg.role === "ai" ? "AI Advisor" : session.prospectName}</div>
                       <div className={styles.msgText}>{msg.text}</div>
                       {msg.slideNum && (
                         <div className={styles.msgSlide}>Slide {msg.slideNum}</div>

@@ -330,7 +330,7 @@ export default function DemoSessionPage() {
               <div className={styles.chatMessages}>
                 {chat.map((msg, i) => (
                   <div key={i} className={msg.role === "ai" ? styles.aiBubble : styles.prospectBubble}>
-                    {msg.role === "ai" && <div className={styles.aiLabel}>AI Pre-Sales</div>}
+                    {msg.role === "ai" && <div className={styles.aiLabel}>AI Advisor</div>}
                     <div className={styles.bubbleText}>
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
                     </div>
@@ -338,7 +338,7 @@ export default function DemoSessionPage() {
                 ))}
                 {(phase === "narrating" || phase === "replying") && (
                   <div className={styles.aiBubble}>
-                    <div className={styles.aiLabel}>AI Pre-Sales</div>
+                    <div className={styles.aiLabel}>AI Advisor</div>
                     <div className={styles.thinkingDots}>
                       <span /><span /><span />
                     </div>

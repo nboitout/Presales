@@ -43,14 +43,14 @@ function LoginForm() {
         <div className={styles.brandInner}>
           <div className={styles.logo}>
             <div className={styles.logoDot} />
-            <span className={styles.logoName}>PreSales Central</span>
+            <span className={styles.logoName}>Forward Deployed Advisor</span>
           </div>
           <h1 className={styles.brandTagline}>
-            Your AI pre-sales workspace for agentic SDLC demos.
+            Your AI advisor workspace for agentic SDLC engagements.
           </h1>
           <div className={styles.brandFeatures}>
-            <div className={styles.brandFeature}><span className={styles.brandDot} /> Build AI-guided demos from your decks</div>
-            <div className={styles.brandFeature}><span className={styles.brandDot} /> Verified, passwordless prospect access</div>
+            <div className={styles.brandFeature}><span className={styles.brandDot} /> Build AI-guided walkthroughs from your decks</div>
+            <div className={styles.brandFeature}><span className={styles.brandDot} /> Verified, passwordless client access</div>
             <div className={styles.brandFeature}><span className={styles.brandDot} /> Fit signals and session intelligence</div>
           </div>
         </div>

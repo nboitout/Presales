@@ -96,7 +96,7 @@ export default function DemoEntryPage() {
       <div className={styles.card}>
         <div className={styles.logoRow}>
           <div className={styles.logoDot} />
-          <span className={styles.logoName}>PreSales Central</span>
+          <span className={styles.logoName}>Forward Deployed Advisor</span>
         </div>
 
         <div className={styles.productBadge}>{deck.targetPersona || "Product demo"}</div>
@@ -122,7 +122,7 @@ export default function DemoEntryPage() {
         ) : (
           <>
             <p className={styles.productTagline}>
-              Your personal AI pre-sales specialist will walk you through {deck.productName}, ask about your setup, and help you understand if it&apos;s a fit.
+              Your personal AI advisor will walk you through {deck.productName}, ask about your setup, and help you understand if it&apos;s a fit.
             </p>
 
             <form onSubmit={handleStart} className={styles.form}>
